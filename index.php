@@ -62,47 +62,99 @@
 
 
 </nav>
-<table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Customer Name</th>
-                <th>Address</th>
-                <th>Notes</th>
-                <th>Email</th>
-                <th>ISD Code</th>
-                <th>Mobile Number</th>
-            </tr>
-        </thead>
-        <tbody >
-        <?php
-            $servername = "localhost";
-            $username = "root";
-            $password = "";
-            $dbname = "customer_management";
-            $conn = mysqli_connect($servername, $username, $password, $dbname);
-            $sql = "SELECT * FROM `customers`";
-            $result = mysqli_query($conn, $sql);
+<div class="d-flex flex-row ">
+  <label for="recordLimit" class="mr-2 ml-2 mt-2">Records per Page</label>
+  <select class="form-control" id="recordLimit" style="width: 100px;" onchange="changeRecordLimit()">
+    <option value="5">5</option>
+    <option value="10">10</option>
+    <option value="15">15</option>
+  </select>
+</div>
 
-            if (mysqli_num_rows($result) > 0) {
-                while ($row = mysqli_fetch_assoc($result)) {
-                    echo "<tr>";
-                    echo "<td>" . $row['CustomerName'] . "</td>";
-                    echo "<td>" . $row['Address'] . "</td>";
-                    echo "<td>" . $row['Notes'] . "</td>";
-                    echo "<td>" . $row['Email'] . "</td>";
-                    echo "<td>" . $row['ISDCode'] . "</td>";
-                    echo "<td>" . $row['MobileNumber'] . "</td>";
-                    echo "</tr>";
-                }
-            } else {
-                echo "No data found";
-            }
 
-            $conn->close();
-        ?>
-        </tbody>
-    </table>
-    
+  <?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "customer_management";
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+
+$limit = 5; // Default limit
+if (isset($_GET['recordLimit'])) {
+  $limit = intval($_GET['recordLimit']);
+}
+
+$page = 1; // Default page
+if (isset($_GET['page'])) {
+  $page = intval($_GET['page']);
+}
+
+$offset = ($page - 1) * $limit;
+$sql = "SELECT * FROM `customers` LIMIT $limit OFFSET $offset";
+$result = mysqli_query($conn, $sql);
+
+if (mysqli_num_rows($result) > 0) {
+  echo '<table class="table table-striped"><thead><tr>
+        <th>Customer Name</th>
+        <th>Address</th>
+        <th>Notes</th>
+        <th>Email</th>
+        <th>ISD Code</th>
+        <th>Mobile Number</th>
+      </tr></thead><tbody>';
+  while ($row = mysqli_fetch_assoc($result)) {
+    echo "<tr>";
+    echo "<td>" . $row['CustomerName'] . "</td>";
+    echo "<td>" . $row['Address'] . "</td>";
+    echo "<td>" . $row['Notes'] . "</td>";
+    echo "<td>" . $row['Email'] . "</td>";
+    echo "<td>" . $row['ISDCode'] . "</td>";
+    echo "<td>" . $row['MobileNumber'] . "</td>";
+    echo "</tr>";
+  }
+  echo '</tbody></table>';
+} else {
+  echo "No data found";
+}
+
+$conn->close();
+?>
+
+  <!-- Pagination links -->
+  <div class="d-flex justify-content-end mr-2">
+  <nav aria-label="Page navigation example">
+    <ul class="pagination">
+      <li class="page-item"><a class="page-link text-dark" href="?page=<?= $page - 1; ?>">Previous</a></li>
+      <li class="page-item"><a class="page-link text-dark" href="?page=1">1</a></li>
+      <li class="page-item"><a class="page-link text-dark" href="?page=2">2</a></li>
+      <li class="page-item"><a class="page-link text-dark" href="?page=3">3</a></li>
+      <li class="page-item"><a class="page-link text-dark" href="?page=<?= $page + 1; ?>">Next</a></li>
+    </ul>
+  </nav>
+</div>
+
+
+  <script>
+  function changeRecordLimit() {
+    const recordLimit = document.getElementById('recordLimit').value;
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', 1);
+    url.searchParams.set('recordLimit', recordLimit);
+    window.location.href = url.toString();
+  }
+
+  // Set the selected record limit in the dropdown based on the URL parameter
+  document.addEventListener("DOMContentLoaded", function () {
+    const url = new URL(window.location.href);
+    const recordLimit = url.searchParams.get("recordLimit");
+    if (recordLimit) {
+      document.getElementById('recordLimit').value = recordLimit;
+    }
+  });
+</script>
+
+
+
 
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
